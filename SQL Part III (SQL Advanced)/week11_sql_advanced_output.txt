@@ -1,0 +1,156 @@
+SQL> 
+SQL> /*
+SQL>Databases Week 11 Tutorial
+SQL>week11_sql_advanced.sql
+SQL>
+SQL>student id: 30647126
+SQL>student name:CHUKWUDI ANYANWU
+SQL>last modified date: 31/05/2020
+SQL>
+SQL>*/
+SQL> 
+SQL> /* 1. Find the number of scheduled classes assigned to each staff member each year and semester.
+SQL>If the number of classes is 2 then this should be labelled as a correct load,
+SQL>more than 2 as an overload and less than 2 as an underload.
+SQL>Order the list by decreasing order of scheduled class number. */
+SQL> 
+SQL> select to_char(ofyear, 'YYYY')as Year, semester, s.staffid,  s.stafffname, s.stafflname,count(*) as Numberclasses,
+  2      case
+  3          when count(*) > 2 then 'overload'
+  4          when count(*) = 2 then 'Correct load'
+  5          else 'underload'
+  6          end as LOAD
+  7  from uni.schedclass c join uni.staff s on c.staffid = s.staffid
+  8  group by  ofyear, semester, s.staffid,  s.stafffname, s.stafflname
+  9  order by Numberclasses;
+
+YEAR   SEMESTER    STAFFID STAFFFNAME           STAFFLNAME           NUMBERCLASSES LOAD        
+---- ---------- ---------- -------------------- -------------------- ------------- ------------
+2013          2          5 Severus              Snape                            1 underload   
+2013          2          3 Filius               Flitwick                         1 underload   
+2013          2          2 Charity              Burbage                          1 underload   
+2013          1          6 Dolores              Umbridge                         1 underload   
+2013          2          6 Dolores              Umbridge                         1 underload   
+2013          1          5 Severus              Snape                            2 Correct load
+2013          1          2 Charity              Burbage                          2 Correct load
+2013          2          1 Albus                Dumbledore                       2 Correct load
+2013          1          1 Albus                Dumbledore                       2 Correct load
+2013          3          7 Minerva              McGonagall                       2 Correct load
+2013          1          3 Filius               Flitwick                         2 Correct load
+
+YEAR   SEMESTER    STAFFID STAFFFNAME           STAFFLNAME           NUMBERCLASSES LOAD        
+---- ---------- ---------- -------------------- -------------------- ------------- ------------
+2013          2          4 Rubeus               Hagrid                           3 overload    
+2013          1          4 Rubeus               Hagrid                           4 overload    
+
+13 rows selected. 
+
+SQL> 
+SQL> 
+SQL> /* 2. Display unit code and unitname for units that do not have a prerequisite.
+SQL>Order the list in increasing order of unit code.
+SQL>
+SQL>There are many approaches that you can take in writing an SQL statement to answer this query.
+SQL>You can use the SET OPERATORS, OUTER JOIN and a SUBQUERY.
+SQL>Write SQL statements based on all of these approaches.*/
+SQL> 
+SQL> 
+SQL> select u.unitcode, u.unitname from uni.unit u
+  2  where u.unitcode not in (select p.unitcode from UNI.prereq p)
+  3  order by u.unitcode;
+
+UNITCOD UNITNAME                                                                                            
+------- ----------------------------------------------------------------------------------------------------
+FIT1004 Introduction to Data Management                                                                     
+FIT1040 Programming Fundamental                                                                             
+FIT5132 Introduction to Databases                                                                           
+
+SQL> 
+SQL> 
+SQL> /* 3. List all units offered in 2013 semester 2 which do not have any scheduled class.
+SQL>Include unit code, unit name, and chief examiner name in the list.
+SQL>Order the list based on the unit code. */
+SQL> 
+SQL> select o.unitcode, u.unitname, s.stafffname ||' '|| s.stafflname as CE_NAME
+  2  from uni.offering o
+  3  join uni.unit u on o.unitcode = u.unitcode 
+  4  join uni.staff s on o.chiefexam = s.staffid
+  5  where o.semester = 2 and o.unitcode not in (select unitcode from uni.schedclass
+  6  where semester = 2)
+  7  order by o.unitcode;
+
+UNITCOD UNITNAME                                                                                             CE_NAME                                  
+------- ---------------------------------------------------------------------------------------------------- -----------------------------------------
+FIT2077 Advanced Data Management                                                                             Albus Dumbledore                         
+FIT5136 Software Enginnering                                                                                 Filius Flitwick                          
+
+SQL> 
+SQL> /* 4. List full names of students who are enrolled in both Introduction to Databases and Programming Foundations
+SQL>(note: unit names are unique). Order the list by student full name.*/
+SQL> 
+SQL> select s.studfname ||' '|| s.studlname as STUDENT_FULL_NAME from UNI.student s 
+  2  join (select studid from uni.enrolment natural join uni.unit where unitname = 'Introduction to Databases'
+  3  intersect
+  4  select studid from uni.enrolment natural join uni.unit where unitname = 'Programming Foundations') l
+  5  on s.studid = l.studid
+  6  order by STUDENT_FULL_NAME;
+
+STUDENT_FULL_NAME                        
+-----------------------------------------
+Gary Gupta
+Ruth Nguyen
+
+SQL> 
+SQL> /* 5. Given that payment rate for tutorial is $42.85 per hour and  payemnt rate for lecture is $75.60 per hour,
+SQL>calculate weekly payment per type of class for each staff.
+SQL>In the display, include staff name, type of class (lecture or tutorial),
+SQL>number of classes, number of hours (total duration), and weekly payment (number of hours * payment rate).
+SQL>Order the list by increasing order of staff name*/
+SQL> 
+SQL> With CTE as (select cltype, count(cltype) as NO_OF_CLASSES, sum(clduration) as TOTAL_HOURS, staffid,
+  2      case 
+  3        when cltype = 'L' then  75.60 
+  4        when cltype = 'T' then  42.85
+  5      end as multiplier
+  6  from uni.schedclass
+  7  group by cltype, staffid)
+  8  select s.stafffname ||' '|| s.stafflname as STAFFNAME, CTE.cltype as TYPE, NO_OF_CLASSES, TOTAL_HOURS, to_char((multiplier * TOTAL_HOURS), '$999,999.00') as WEEKLY_PAYMENT
+  9  FROM CTE join uni.staff s on CTE.staffid = s.staffid
+ 10  order by STAFFNAME,CTE.cltype;
+
+STAFFNAME                                 T NO_OF_CLASSES TOTAL_HOURS WEEKLY_PAYME
+----------------------------------------- - ------------- ----------- ------------
+Albus Dumbledore                          L             3           5      $378.00
+Albus Dumbledore                          T             1           2       $85.70
+Charity Burbage                           T             3           6      $257.10
+Dolores Umbridge                          T             2           4      $171.40
+Filius Flitwick                           L             2           4      $302.40
+Filius Flitwick                           T             1           3      $128.55
+Minerva McGonagall                        L             1           4      $302.40
+Minerva McGonagall                        T             1           4      $171.40
+Rubeus Hagrid                             L             2           4      $302.40
+Rubeus Hagrid                             T             5          10      $428.50
+Severus Snape                             L             1           2      $151.20
+
+STAFFNAME                                 T NO_OF_CLASSES TOTAL_HOURS WEEKLY_PAYME
+----------------------------------------- - ------------- ----------- ------------
+Severus Snape                             T             2           4      $171.40
+
+12 rows selected. 
+
+SQL> 
+SQL> /* 6. Assume that all units worth 6 credit points each, calculate each student’s Weighted Average Mark (WAM) and GPA.
+SQL>Please refer to these Monash websites: https://www.monash.edu/exams/results/wam and https://www.monash.edu/exams/results/gpa
+SQL>for more information about WAM and GPA respectively.
+SQL>
+SQL>Calculation example for student 111111111:
+SQL>WAM = (65x3 + 45x3 + 74x3 +74*6)/(3+3+3+6) = 66.4
+SQL>GPA = (2x6 + 0.3x6 + 3x6 + 3x6)/(6+6+6+6) = 2.08
+SQL>
+SQL>Include student id, student full name (in a 40 character wide column headed “Student Full Name”), WAM and GPA in the display.
+SQL>Order the list by descending order of WAM then descending order of GPA.
+SQL>*/
+SQL> 
+SQL> 
+SQL> 
+SQL> SPOOL OFF

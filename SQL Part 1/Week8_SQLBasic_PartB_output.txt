@@ -1,0 +1,207 @@
+SQL> 
+SQL> /*
+SQL>Databases Week 8 Tutorial Sample Solution
+SQL>week8_SQLBasic_PartB.sql
+SQL>
+SQL>--Student Name:     CHUKWUDI ANYANWU
+SQL>--Student Number:   30647126
+SQL>--Tutor :           Tianyue Ma 
+SQL>last modified date: 16/05/2020
+SQL>
+SQL>*/
+SQL> 
+SQL> /* B1. List all the unit codes, semester and name of the chief examiner for all 
+SQL>   the units that are offered in 2014.*/
+SQL> 
+SQL> SELECT
+  2      o.unitcode,
+  3      o.semester,
+  4      s.stafffname,
+  5      s.stafflname
+  6  FROM
+  7      uni.offering   o
+  8      JOIN uni.staff s ON s.staffid = o.chiefexam
+  9  WHERE
+ 10      to_char(ofyear, 'YYYY') = 2014
+ 11  ORDER BY
+ 12      unitcode;
+
+UNITCOD   SEMESTER STAFFFNAME           STAFFLNAME          
+------- ---------- -------------------- --------------------
+FIT1040          3 Rubeus               Hagrid              
+FIT5131          1 Minerva              McGonagall          
+FIT5131          2 Minerva              McGonagall          
+
+SQL> 
+SQL> /* B2. List all the unit codes and the unit names and their year and semester 
+SQL>      offerings. To display the date correctly in Oracle, you need to use to_char function. 
+SQL>      For example, to_char(ofyear,'YYYY'). */
+SQL> 
+SQL> SELECT
+  2      unitcode,
+  3      unitdesc,
+  4      to_char(ofyear, 'YYYY') AS "Year",
+  5      semester
+  6  FROM
+  7      ( uni.offering
+  8      NATURAL JOIN uni.unit )
+  9  ORDER BY
+ 10      unitcode,
+ 11      unitdesc,
+ 12      ofyear;
+
+UNITCOD UNITDESC                                                                                                                                                                                                 Year   SEMESTER
+------- -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- ---- ----------
+FIT1004 Introduction to relational model and relational DBMS                                                                                                                                                     2013          1
+FIT1004 Introduction to relational model and relational DBMS                                                                                                                                                     2013          2
+FIT1040 Introduction to programming                                                                                                                                                                              2013          1
+FIT1040 Introduction to programming                                                                                                                                                                              2013          2
+FIT1040 Introduction to programming                                                                                                                                                                              2014          3
+FIT2077 Advanced relational database concept and XML                                                                                                                                                             2013          1
+FIT2077 Advanced relational database concept and XML                                                                                                                                                             2013          2
+FIT5131 Introduction to programming concept and algorithms                                                                                                                                                       2013          1
+FIT5131 Introduction to programming concept and algorithms                                                                                                                                                       2013          2
+FIT5131 Introduction to programming concept and algorithms                                                                                                                                                       2014          1
+FIT5131 Introduction to programming concept and algorithms                                                                                                                                                       2014          2
+
+UNITCOD UNITDESC                                                                                                                                                                                                 Year   SEMESTER
+------- -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- ---- ----------
+FIT5132 Introduction to relational model and relational DBMS                                                                                                                                                     2013          1
+FIT5132 Introduction to relational model and relational DBMS                                                                                                                                                     2013          3
+FIT5136 Software modeling and testing                                                                                                                                                                            2013          2
+
+14 rows selected. 
+
+SQL> 
+SQL> /* B3. List the unit code, semester, class type (lecture or tutorial), 
+SQL>      day and time for all units taught by Albus Dumbledore in 2013. 
+SQL>      Sort the list according to the unit code.*/
+SQL> 
+SQL> SELECT
+  2      c.unitcode,
+  3      c.semester,
+  4      c.cltype,
+  5      c.clday,
+  6      c.cltime
+  7  FROM
+  8      uni.schedclass c
+  9      NATURAL JOIN uni.staff s
+ 10  WHERE
+ 11      s.stafffname = 'Albus'
+ 12      AND s.stafflname = 'Dumbledore'
+ 13      AND to_char(ofyear, 'YYYY') = 2013
+ 14  ORDER BY
+ 15      c.unitcode;
+
+UNITCOD   SEMESTER C CLDAY  CLTIME   
+------- ---------- - ------ ---------
+FIT1004          1 L Mon    01/APR/17
+FIT1004          2 L Mon    01/APR/17
+FIT1004          2 T Mon    01/APR/17
+FIT2077          1 L Tues   01/APR/17
+
+SQL> 
+SQL> /* B4. Create a study statement for Mary Smith. A study statement contains 
+SQL>      unit code, unit name, semester and year study was attempted, the mark 
+SQL>      and grade. */
+SQL> 
+SQL> SELECT
+  2      u.unitcode,
+  3      u.unitname,
+  4      e.semester,
+  5      to_char(ofyear, 'YYYY') AS "Year",
+  6      e.mark,
+  7      e.grade
+  8  FROM
+  9      ( ( uni.enrolment   e
+ 10      JOIN uni.student     s ON s.studid = e.studid ) )
+ 11      JOIN uni.unit        u ON u.unitcode = e.unitcode
+ 12  WHERE
+ 13      s.studfname = 'Mary'
+ 14      AND s.studlname = 'Smith'
+ 15  ORDER BY
+ 16      u.unitcode;
+
+UNITCOD UNITNAME                                                                                               SEMESTER Year       MARK GR
+------- ---------------------------------------------------------------------------------------------------- ---------- ---- ---------- --
+FIT1004 Introduction to Data Management                                                                               1 2013         65 C 
+FIT1040 Programming Fundamental                                                                                       1 2013         45 N 
+FIT1040 Programming Fundamental                                                                                       2 2013         74 D 
+FIT2077 Advanced Data Management                                                                                      2 2013         74 D 
+
+SQL> 
+SQL> /* B5. List the unit code and unit name of the pre-requisite units of 
+SQL>      'Advanced Data Management' unit */
+SQL> 
+SQL> SELECT
+  2      u.unitcode,
+  3      u.unitname
+  4  FROM
+  5      uni.unit u
+  6  WHERE
+  7      u.unitcode IN (
+  8          SELECT
+  9              r.has_prereq_of
+ 10          FROM
+ 11              uni.unit     u
+ 12              NATURAL JOIN uni.prereq   r
+ 13          WHERE
+ 14              u.unitname = 'Advanced Data Management'
+ 15      );
+
+UNITCOD UNITNAME                                                                                            
+------- ----------------------------------------------------------------------------------------------------
+FIT1040 Programming Fundamental                                                                             
+FIT1004 Introduction to Data Management                                                                     
+
+SQL> 
+SQL> /* B6. Find all students (list their id, firstname and surname) who 
+SQL>       have a failed unit in the year 2013 */
+SQL> 
+SQL> SELECT
+  2      s.studid,
+  3      s.studfname,
+  4      s.studlname
+  5  FROM
+  6      ( ( uni.enrolment   e
+  7      JOIN uni.student     s ON s.studid = e.studid ) )
+  8  WHERE
+  9      e.grade = 'N'
+ 10      AND to_char(e.ofyear, 'YYYY') = 2013
+ 11  ORDER BY
+ 12      e.studid;
+
+    STUDID STUDFNAME            STUDLNAME           
+---------- -------------------- --------------------
+  11111111 Mary                 Smith               
+  11111114 Rani                 Dewa                
+  11111115 David                Dumbledore          
+
+SQL> 
+SQL> /* B7.	List the student name, unit code, semester and year for those 
+SQL>        students who do not have marks recorded */
+SQL> 
+SQL> SELECT
+  2      s.studfname,
+  3      s.studlname,
+  4      e.unitcode,
+  5      e.semester,
+  6      to_char(ofyear, 'YYYY') AS "Year"
+  7  FROM
+  8      ( ( uni.enrolment   e
+  9      JOIN uni.student   s ON s.studid = e.studid ) )
+ 10  WHERE
+ 11      e.mark IS NULL
+ 12  ORDER BY
+ 13      e.studid;
+
+STUDFNAME            STUDLNAME            UNITCOD   SEMESTER Year
+-------------------- -------------------- ------- ---------- ----
+Jake                 Ryan                 FIT1004          2 2013
+Gary                 Gupta                FIT5131          1 2014
+Ruth                 Nguyen               FIT5131          1 2014
+
+SQL> 
+SQL> 
+SQL> 
+SQL> SPOOL OFF

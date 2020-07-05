@@ -1,0 +1,185 @@
+SQL> 
+SQL> -- Dropping Tables and sequences if they are already created. 
+SQL> DROP TABLE unit CASCADE CONSTRAINTS;
+
+Table UNIT dropped.
+
+SQL> 
+SQL> DROP TABLE student CASCADE CONSTRAINTS;
+
+Table STUDENT dropped.
+
+SQL> 
+SQL> DROP TABLE enrolment CASCADE CONSTRAINTS;
+
+Table ENROLMENT dropped.
+
+SQL> 
+SQL> DROP SEQUENCE STUDENT_SEQ;
+
+Sequence STUDENT_SEQ dropped.
+
+SQL> 
+SQL> --Drop Table FIT5111_STUDENT Purge;
+SQL> 
+SQL> 
+SQL> 
+SQL> -- CREATING UNIT Table
+SQL> CREATE TABLE unit (
+  2      unit_code   CHAR(7) NOT NULL,
+  3      unit_name   VARCHAR(50) NOT NULL,
+  4      CONSTRAINT unit_pk PRIMARY KEY ( unit_code )
+  5  );
+
+Table UNIT created.
+
+SQL> 
+SQL> --- STUDENT Table
+SQL> CREATE TABLE student (
+  2      stu_nbr     NUMERIC(8) NOT NULL CHECK ( stu_nbr > 10000000 ),
+  3      stu_lname   VARCHAR(50) NOT NULL,
+  4      stu_fname   VARCHAR(50) NOT NULL,
+  5      stu_dob     DATE NOT NULL,
+  6      CONSTRAINT student_pk PRIMARY KEY ( stu_nbr )
+  7  );
+
+Table STUDENT created.
+
+SQL> 
+SQL> -- Alteriing UNIT Table: unique key 
+SQL> ALTER TABLE unit ADD CONSTRAINT unique_constraint_name UNIQUE ( unit_name );
+
+Table UNIT altered.
+
+SQL> 
+SQL> -- Creating Enrolment Table     
+SQL> CREATE TABLE enrolment (
+  2      stu_nbr          NUMERIC(8) NOT NULL,
+  3      unit_code        CHAR(7) NOT NULL,
+  4      enrol_year       NUMERIC(4) NOT NULL,
+  5      enrol_semester   CHAR(1) NOT NULL,
+  6      enrol_mark       NUMERIC(3),
+  7      enrol_grade      CHAR(2),
+  8      CONSTRAINT enrolment_pk PRIMARY KEY ( stu_nbr,
+  9                                            unit_code,
+ 10                                            enrol_year,
+ 11                                            enrol_semester )
+ 12  );
+
+Table ENROLMENT created.
+
+SQL> 
+SQL> ---Alteriing ENROLMENT Table:
+SQL> ALTER TABLE enrolment ADD (
+  2      CONSTRAINT check_enrol_sem CHECK ( enrol_semester IN (
+  3          '1',
+  4          '2',
+  5          '3'
+  6      ) ),
+  7      CONSTRAINT fk_enrol_ref_unit FOREIGN KEY ( unit_code )
+  8          REFERENCES unit ( unit_code )
+  9              ON DELETE CASCADE,
+ 10      CONSTRAINT fk_enrol_ref_student FOREIGN KEY ( stu_nbr )
+ 11          REFERENCES student ( stu_nbr )
+ 12              ON DELETE CASCADE
+ 13  );
+
+Table ENROLMENT altered.
+
+SQL> 
+SQL> 
+SQL> DROP TABLE product CASCADE CONSTRAINTS;
+
+Table PRODUCT dropped.
+
+SQL> 
+SQL> DROP TABLE vendor CASCADE CONSTRAINTS;
+
+Table VENDOR dropped.
+
+SQL> 
+SQL> DROP SEQUENCE product_prod_no_seq;
+
+Sequence PRODUCT_PROD_NO_SEQ dropped.
+
+SQL> 
+SQL> DROP SEQUENCE vendor_vendor_id_seq;
+
+Sequence VENDOR_VENDOR_ID_SEQ dropped.
+
+SQL> 
+SQL> CREATE TABLE product (
+  2      prod_no            NUMBER(4) NOT NULL,
+  3      prod_name          VARCHAR2(50) NOT NULL,
+  4      prod_price         NUMBER(6, 2) NOT NULL,
+  5      prod_stock         NUMBER(3) NOT NULL,
+  6      vendor_vendor_id   NUMBER(3) NOT NULL
+  7  );
+
+Table PRODUCT created.
+
+SQL> 
+SQL> ALTER TABLE product ADD CONSTRAINT product_pk PRIMARY KEY ( prod_no );
+
+Table PRODUCT altered.
+
+SQL> 
+SQL> CREATE TABLE vendor (
+  2      vendor_id      NUMBER(3) NOT NULL,
+  3      vendor_name    VARCHAR2(50) NOT NULL,
+  4      vendor_phone   CHAR(10) NOT NULL
+  5  );
+
+Table VENDOR created.
+
+SQL> 
+SQL> ALTER TABLE vendor ADD CONSTRAINT vendor_pk PRIMARY KEY ( vendor_id );
+
+Table VENDOR altered.
+
+SQL> 
+SQL> ALTER TABLE vendor ADD CONSTRAINT vendor_un UNIQUE ( vendor_name );
+
+Table VENDOR altered.
+
+SQL> 
+SQL> ALTER TABLE product
+  2      ADD CONSTRAINT product_vendor_fk FOREIGN KEY ( vendor_vendor_id )
+  3          REFERENCES vendor ( vendor_id )
+  4              ON DELETE CASCADE;
+
+Table PRODUCT altered.
+
+SQL> 
+SQL> 
+SQL> CREATE SEQUENCE product_prod_no_seq START WITH 1 INCREMENT BY 1;
+
+Sequence PRODUCT_PROD_NO_SEQ created.
+
+SQL> 
+SQL> CREATE SEQUENCE vendor_vendor_id_seq START WITH 1 INCREMENT BY 1;
+
+Sequence VENDOR_VENDOR_ID_SEQ created.
+
+SQL> 
+SQL> 
+SQL> ---- Create a table called FIT5111_STUDENT
+SQL> --CREATE TABLE FIT5111_STUDENT
+SQL> --AS select * From enrolment
+SQL> --where unit_code = 'FIT5111';
+SQL> --commit;
+SQL> 
+SQL> -- Checking if the table exit 
+SQL> select tname from tab where tname = 'FIT5111_STUDENT';
+
+TNAME                                                                                                                           
+--------------------------------------------------------------------------------------------------------------------------------
+FIT5111_STUDENT
+
+SQL> 
+SQL> 
+SQL> 
+SQL> 
+SQL> 
+SQL> 
+SQL> SPOOL OFF

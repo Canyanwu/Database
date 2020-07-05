@@ -1,0 +1,117 @@
+SQL> 
+SQL> ---Update the unit name of FIT9999 from 'FIT Last Unit' to 'place holder unit'.
+SQL> UPDATE unit
+  2  SET unit_name = 'place holder unit'
+  3  WHERE unit_name = 'FIT Last Unit' AND unit_code ='FIT9999';
+
+1 row updated.
+
+SQL> 
+SQL> --Enter the mark and grade for the student with the student number of 11111113 for the unit
+SQL> --code FIT5132 that the student enrolled in semester 2 of 2014. The mark is 75 and the grade
+SQL> --is D.
+SQL> UPDATE enrolment
+  2  SET enrol_mark = 75, enrol_grade = 'D'
+  3  WHERE stu_nbr = 11111113 AND unit_code = 'FIT5132' AND enrol_year = 2014 AND enrol_semester = '2';
+
+1 row updated.
+
+SQL> 
+SQL> --Change the database to reflect the new grade classification.
+SQL> --UPDATE enrolment
+SQL> --SET enrol_grade = 'P1' WHERE enrol_mark >= 45 and enrol_mark  <= 54;
+SQL> --UPDATE enrolment
+SQL> --SET enrol_grade = 'P2' WHERE enrol_mark >= 55 and enrol_mark  <= 64;
+SQL> --UPDATE enrolment
+SQL> --SET enrol_grade = 'C' WHERE enrol_mark >= 65 and enrol_mark  <= 74;
+SQL> --UPDATE enrolment
+SQL> --SET enrol_grade = 'D' WHERE enrol_mark >= 75 and enrol_mark  <= 84;
+SQL> --UPDATE enrolment
+SQL> --SET enrol_grade = 'HD' WHERE enrol_mark >= 85 and enrol_mark  <= 100;
+SQL> 
+SQL> 
+SQL> UPDATE enrolment set enrol_grade = CASE
+  2      WHEN enrol_mark >= 0
+  3           AND enrol_mark <= 44 THEN
+  4          'N'
+  5      WHEN enrol_mark >= 45
+  6           AND enrol_mark <= 54 THEN
+  7          'P1'
+  8      WHEN enrol_mark >= 55
+  9           AND enrol_mark <= 64 THEN
+ 10          'P2'
+ 11      WHEN enrol_mark >= 65
+ 12           AND enrol_mark <= 74 THEN
+ 13          'C'
+ 14      WHEN enrol_mark >= 75
+ 15           AND enrol_mark <= 84 THEN
+ 16          'D'
+ 17      WHEN enrol_mark >= 85
+ 18           AND enrol_mark <= 100 THEN
+ 19          'HD'
+ 20      ELSE
+ 21          NULL
+ 22      END;
+
+12 rows updated.
+
+SQL> 
+SQL> 
+SQL> 
+SQL> --A student with student number 11111114 has taken intermission in semester 2 2014, hence
+SQL> --all the enrolment of this student for semester 2 2014 should be removed. Change the
+SQL> --database to reflect this situation.
+SQL> DELETE FROM enrolment 
+  2  WHERE (stu_nbr = '11111114' AND enrol_year = 2014 AND enrol_semester = '2');
+
+1 row deleted.
+
+SQL> 
+SQL> --Assume that Wendy Wheat (student number 11111113) has withdrawn from the university.
+SQL> --Remove her details from the database.
+SQL> DELETE FROM enrolment WHERE (stu_nbr = '11111113');
+
+2 rows deleted.
+
+SQL> DELETE FROM student WHERE (stu_nbr = '11111113');
+
+1 row deleted.
+
+SQL> 
+SQL> --Add Wendy Wheat back to the database (use the INSERT statements you have created
+SQL> --when completing module Tutorial 7 SQL Data Definition Language DDL).
+SQL> insert into student values (11111113, 'Wheat','Wendy','05-May-1990');
+
+1 row inserted.
+
+SQL> insert into enrolment values (11111113, 'FIT5111',2014,'2',null,null);
+
+1 row inserted.
+
+SQL> 
+SQL> --Change the FOREIGN KEY constraints definition for table STUDENT 
+SQL> ALTER TABLE enrolment
+  2  DROP CONSTRAINT fk_enrolment_student;
+
+Table ENROLMENT altered.
+
+SQL> 
+SQL> ALTER TABLE enrolment
+  2  ADD CONSTRAINT fk_enrol_ref_student FOREIGN KEY ( stu_nbr )
+  3          REFERENCES student ( stu_nbr )
+  4              ON DELETE CASCADE;
+
+Table ENROLMENT altered.
+
+SQL> 
+SQL> --- With ON DELETE CASCADE Constraint deleting the row in the  parent class automaticaly deleted the row in the child class.
+SQL> --- Wendy Wheat was automaticaly deleted from the enrolment table when deleted from the student table
+SQL> 
+SQL> 
+SQL> 
+SQL> COMMIT;
+
+Commit complete.
+
+SQL> 
+SQL> SPOOL OFF
