@@ -1,6 +1,6 @@
 # DATABASE
 
-### Author:  Chukwudi Anyanwu
+### Author:  Chukwudi Derek Anyanwu
 
 This repository contains code samples that demonstrate my skills and  experience in the following:
 
